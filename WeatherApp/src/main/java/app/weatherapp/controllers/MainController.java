@@ -23,17 +23,17 @@ public class MainController {
   private final UserService userService;
 
   @PostMapping("/login")
-  public ResponseEntity login(@RequestBody UserLoginDto userLoginDto){
+  public ResponseEntity login(@RequestBody UserLoginDto userLoginDto) {
     return ResponseEntity.ok().body(userService.login(userLoginDto));
   }
 
   @GetMapping("/mycities/{id}")
-  public ResponseEntity listMyCities(@PathVariable long id){
+  public ResponseEntity listMyCities(@PathVariable long id) {
     return ResponseEntity.ok().body(userService.ListMyCities(id));
   }
 
   @PostMapping("/add/mycities/{id}")
-  public ResponseEntity addToMyCities(@PathVariable long id, @RequestBody City cityName){
+  public ResponseEntity addToMyCities(@PathVariable long id, @RequestBody City cityName) {
     userService.addCityToMyList(id, cityName);
     return ResponseEntity.ok().body("added to your list");
   }

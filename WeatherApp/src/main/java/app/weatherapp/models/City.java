@@ -1,6 +1,7 @@
 package app.weatherapp.models;
 
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,7 +19,7 @@ public class City {
   @Column(unique = true)
   private String cityName;
 
-  @ManyToMany(mappedBy = "myCities" , cascade = CascadeType.ALL)
+  @ManyToMany(mappedBy = "myCities", cascade = CascadeType.ALL)
   private List<User> userList;
 
   public City(String cityName) {
@@ -38,5 +39,22 @@ public class City {
 
   public Long getId() {
     return id;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    City city = (City) o;
+    return cityName.equals(city.cityName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(cityName);
   }
 }
