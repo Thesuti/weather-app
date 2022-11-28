@@ -60,6 +60,12 @@ public class UserServiceImplementation implements UserService {
     userRepository.save(user);
   }
 
+  public void removeCityFromMyList(Long id, City cityName){
+    User user = findUserById(id);
+    user.removeCity(cityName);
+    userRepository.save(user);
+  }
+
   public User findUserById(Long id) {
     return userRepository.findById(id).orElseThrow();
   }

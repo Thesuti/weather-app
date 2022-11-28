@@ -44,4 +44,10 @@ public class MainController {
     return ResponseEntity.ok().body(userService.getInfoFromCity(cityName));
   }
 
+  @PostMapping("/delete/mycities/{id}")
+  public ResponseEntity deleteCityFromMyList(@PathVariable long id, @RequestBody City cityName) {
+    userService.removeCityFromMyList(id, cityName);
+    return ResponseEntity.ok().body("City removed from your list");
+  }
+
 }

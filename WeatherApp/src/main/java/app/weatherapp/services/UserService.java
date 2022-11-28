@@ -14,6 +14,8 @@ public interface UserService {
 
   void addCityToMyList(Long id,City cityName);
 
+  public void removeCityFromMyList(Long id, City cityName);
+
   User findUserById(Long id);
 
   String getInfoFromCity(String cityname) throws IOException, InterruptedException;
