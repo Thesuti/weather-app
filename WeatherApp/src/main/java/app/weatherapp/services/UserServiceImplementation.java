@@ -113,8 +113,7 @@ public class UserServiceImplementation implements UserService {
       }
       throw new PasswordIsTooShortException();
     }
-    String encodedPassword = passwordEncoder.encode(user.getPassword());
-    user.setPassword(encodedPassword);
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
     userRepository.save(user);
   }
 }
