@@ -2,6 +2,7 @@ package app.weatherapp.controllers;
 
 import app.weatherapp.dtos.UserLoginDto;
 import app.weatherapp.models.City;
+import app.weatherapp.models.User;
 import app.weatherapp.services.UserService;
 import java.io.IOException;
 import java.util.List;
@@ -48,6 +49,12 @@ public class MainController {
   public ResponseEntity deleteCityFromMyList(@PathVariable long id, @RequestBody City cityName) {
     userService.removeCityFromMyList(id, cityName);
     return ResponseEntity.ok().body("City removed from your list");
+  }
+
+  @PostMapping("/register")
+  public ResponseEntity register(@RequestBody User user){
+    userService.register(user);
+    return ResponseEntity.ok().body("Successfully registered");
   }
 
 }

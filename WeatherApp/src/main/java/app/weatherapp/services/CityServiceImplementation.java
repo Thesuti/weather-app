@@ -7,8 +7,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CityServiceImplementation {
+/*
 
-  /*public CityServiceImplementation(CityRepository cityRepository) {
+  public CityServiceImplementation(CityRepository cityRepository) {
     this.cityRepository = cityRepository;
   }
 
@@ -23,6 +24,7 @@ public class CityServiceImplementation {
   }
   public boolean isCityExist(String cityName){
     return cityRepository.existByCityName(cityName);
-  }*/
+  }
+*/
 
 }

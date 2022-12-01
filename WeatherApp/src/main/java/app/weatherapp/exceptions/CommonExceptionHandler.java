@@ -32,10 +32,29 @@ public class CommonExceptionHandler {
   public ErrorResponseDto handleInvalidLoginCredentialsException() {
     return new ErrorResponseDto("Invalid login credentials");
   }
-  @ExceptionHandler({AlreadySavedCityException.class,ListDoesntContainsCityException.class})
+
+  @ExceptionHandler({AlreadySavedCityException.class, ListDoesntContainsCityException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponseDto handleAlreadySavedCityException(Exception exception) {
     return new ErrorResponseDto(exception.getMessage());
+  }
+
+  @ExceptionHandler(UsernameIsTakenException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponseDto handleUsernameIsTakenException() {
+    return new ErrorResponseDto("Username is already taken");
+  }
+
+  @ExceptionHandler(UsernameIsTooShortException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponseDto handleUsernameIsTooShortException() {
+    return new ErrorResponseDto("Username is too short");
+  }
+
+  @ExceptionHandler(PasswordIsTooShortException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponseDto handlePasswordIsTooShortException() {
+    return new ErrorResponseDto("Password is too short");
   }
 
 }

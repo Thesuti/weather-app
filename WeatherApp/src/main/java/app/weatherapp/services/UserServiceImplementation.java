@@ -1,11 +1,13 @@
 package app.weatherapp.services;
 
 import app.weatherapp.dtos.UserLoginDto;
-import app.weatherapp.exceptions.AlreadySavedCityException;
 import app.weatherapp.exceptions.InvalidLoginCredentialsException;
+import app.weatherapp.exceptions.PasswordIsTooShortException;
 import app.weatherapp.exceptions.PasswordMissingException;
 import app.weatherapp.exceptions.UserNotFoundException;
 import app.weatherapp.exceptions.UsernameIsEmptyException;
+import app.weatherapp.exceptions.UsernameIsTakenException;
+import app.weatherapp.exceptions.UsernameIsTooShortException;
 import app.weatherapp.models.City;
 import app.weatherapp.models.User;
 import app.weatherapp.repositories.UserRepository;
@@ -18,6 +20,8 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,12 +29,14 @@ public class UserServiceImplementation implements UserService {
 
   public UserServiceImplementation(UserRepository userRepository) {
     this.userRepository = userRepository;
+    this.passwordEncoder = new BCryptPasswordEncoder();
   }
 
   @Value("${API_KEY}")
   private String key;
 
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   public User login(UserLoginDto userLoginDto) {
     if (userLoginDto.getUsername() == null || userLoginDto.getPassword() == null) {
@@ -86,5 +92,26 @@ public class UserServiceImplementation implements UserService {
     return "current temperature in " + cityname + " " + ((JSONObject) jsonArray.get(
         0)).getBigDecimal("temp").toString() +
         "\n" + ((JSONObject) jsonArray.get(0)).get("description").toString();
+  }
+  
+  public void register(User user){
+    if (user == null) {
+      throw new UserNotFoundException();
+    } else if (user.getUsername().isEmpty() || user.getPassword().isEmpty()) {
+      if (user.getUsername().isEmpty()) {
+        throw new UsernameIsEmptyException();
+      }
+      throw new PasswordMissingException();
+    } else if (userRepository.existsByUsername(user.getUsername())) {
+      throw new UsernameIsTakenException();
+    } else if (user.getUsername().length()<4 && user.getPassword().length()<8) {
+      if (user.getUsername().length()<4) {
+        throw new UsernameIsTooShortException();
+      }
+      throw new PasswordIsTooShortException();
+    }
+    String encodedPassword = passwordEncoder.encode(user.getPassword());
+    user.setPassword(encodedPassword);
+    userRepository.save(user);
   }
 }

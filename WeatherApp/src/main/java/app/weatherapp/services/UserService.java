@@ -20,4 +20,6 @@ public interface UserService {
 
   String getInfoFromCity(String cityname) throws IOException, InterruptedException;
 
+  void register(User user);
+
 }
