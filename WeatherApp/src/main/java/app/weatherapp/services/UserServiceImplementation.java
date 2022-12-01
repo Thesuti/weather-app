@@ -48,8 +48,11 @@ public class UserServiceImplementation implements UserService {
       throw new PasswordMissingException();
     } else if (!userRepository.existsByUsername(userLoginDto.getUsername())) {
       throw new UserNotFoundException();
-    } else if (!userRepository.findUserByUsername(userLoginDto.getUsername()).getPassword()
-        .equals(userLoginDto.getPassword())) {
+    }
+    boolean isPasswordMatches = passwordEncoder.matches(userLoginDto.getPassword(),
+        userRepository.findUserByUsername(
+            userLoginDto.getUsername()).getPassword());
+    if (!isPasswordMatches) {
       throw new InvalidLoginCredentialsException();
     }
     return userRepository.findUserByUsernameAndPassword(userLoginDto.getUsername(),
@@ -66,7 +69,7 @@ public class UserServiceImplementation implements UserService {
     userRepository.save(user);
   }
 
-  public void removeCityFromMyList(Long id, City cityName){
+  public void removeCityFromMyList(Long id, City cityName) {
     User user = findUserById(id);
     user.removeCity(cityName);
     userRepository.save(user);
@@ -93,8 +96,8 @@ public class UserServiceImplementation implements UserService {
         0)).getBigDecimal("temp").toString() +
         "\n" + ((JSONObject) jsonArray.get(0)).get("description").toString();
   }
-  
-  public void register(User user){
+
+  public void register(User user) {
     if (user == null) {
       throw new UserNotFoundException();
     } else if (user.getUsername().isEmpty() || user.getPassword().isEmpty()) {
@@ -104,8 +107,8 @@ public class UserServiceImplementation implements UserService {
       throw new PasswordMissingException();
     } else if (userRepository.existsByUsername(user.getUsername())) {
       throw new UsernameIsTakenException();
-    } else if (user.getUsername().length()<4 && user.getPassword().length()<8) {
-      if (user.getUsername().length()<4) {
+    } else if (user.getUsername().length() < 4 && user.getPassword().length() < 8) {
+      if (user.getUsername().length() < 4) {
         throw new UsernameIsTooShortException();
       }
       throw new PasswordIsTooShortException();
