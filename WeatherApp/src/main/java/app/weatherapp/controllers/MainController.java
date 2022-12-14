@@ -24,11 +24,6 @@ public class MainController {
 
   private final UserService userService;
 
-  @PostMapping("/login")
-  public ResponseEntity login(@RequestBody UserLoginDto userLoginDto) {
-    return ResponseEntity.ok().body(userService.login(userLoginDto));
-  }
-
   @GetMapping("/mycities/{id}")
   public ResponseEntity listMyCities(@PathVariable long id) {
     return ResponseEntity.ok().body(userService.ListMyCities(id));
@@ -53,7 +48,7 @@ public class MainController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity register(@RequestBody User user){
+  public ResponseEntity register(@RequestBody User user) {
     userService.register(user);
     return ResponseEntity.ok().body("Successfully registered");
   }

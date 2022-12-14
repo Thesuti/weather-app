@@ -1,69 +1,53 @@
 package app.weatherapp.configuration;
 
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
+import app.weatherapp.services.TokenServices;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-  public SecurityConfig(RsaKeyProperties rsaKeyProperties) {
-    this.rsaKeyProperties = rsaKeyProperties;
+  public SecurityConfig(UserDetailsService userDetailsService,
+      BCryptPasswordEncoder passwordEncoder, TokenServices tokenServices) {
+    this.userDetailsService = userDetailsService;
+    this.passwordEncoder = passwordEncoder;
+    this.tokenServices = tokenServices;
   }
 
-  private final RsaKeyProperties rsaKeyProperties;
 
-  @Bean
-  public InMemoryUserDetailsManager user(){
-    return new InMemoryUserDetailsManager(
-        User.withUsername("user")
-            .password("{noop}password")
-            .authorities("read").build());
-  }
+  private final UserDetailsService userDetailsService;
+
+  private final BCryptPasswordEncoder passwordEncoder;
+
+  private final TokenServices tokenServices;
+
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http
+    AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(
+        AuthenticationManagerBuilder.class);
+    authenticationManagerBuilder.userDetailsService(userDetailsService)
+        .passwordEncoder(passwordEncoder);
+    http
         .csrf(csrf -> csrf.disable())
         .authorizeRequests().antMatchers("/register").permitAll().and()
         .authorizeRequests().antMatchers("/login").permitAll().and()
         .authorizeRequests().antMatchers("/**").authenticated().and()
         .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .httpBasic(Customizer.withDefaults())
-        .build();
-  }
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-  @Bean
-  JwtDecoder jwtDecoder(){
-    return NimbusJwtDecoder.withPublicKey(rsaKeyProperties.rsaPublicKey()).build();
-  }
-
-  @Bean
-  JwtEncoder jwtEncoder(){
-    JWK jwk = new RSAKey.Builder(rsaKeyProperties.rsaPublicKey()).privateKey(
-        rsaKeyProperties.rsaPrivateKey()).build();
-    JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-    return new NimbusJwtEncoder(jwks);
+    http.apply(AuthConfig.getAuthConfig(tokenServices));
+    return http.build();
   }
 
 

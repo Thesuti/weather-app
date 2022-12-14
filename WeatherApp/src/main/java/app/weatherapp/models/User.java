@@ -71,8 +71,7 @@ public class User {
     myCities.add(city);
   }
 
-
-  public void removeCity(City city){
+  public void removeCity(City city) {
     if (!myCities.contains(city)) {
       throw new ListDoesntContainsCityException(city.getCityName());
     }

@@ -16,27 +16,34 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImplementation implements UserService {
-
-  public UserServiceImplementation(UserRepository userRepository) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = new BCryptPasswordEncoder();
-  }
+public class UserServiceImplementation implements UserService, UserDetailsService {
+  // UserDetailsService
 
   @Value("${API_KEY}")
   private String key;
 
   private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
+  private final BCryptPasswordEncoder passwordEncoder;
+
+  public UserServiceImplementation(UserRepository userRepository,
+      BCryptPasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+  }
 
   public User login(UserLoginDto userLoginDto) {
     if (userLoginDto.getUsername() == null || userLoginDto.getPassword() == null) {
@@ -51,7 +58,7 @@ public class UserServiceImplementation implements UserService {
     }
     boolean isPasswordMatches = passwordEncoder.matches(userLoginDto.getPassword(),
         userRepository.findUserByUsername(
-            userLoginDto.getUsername()).getPassword());
+            userLoginDto.getUsername()).orElseThrow().getPassword());
     if (!isPasswordMatches) {
       throw new InvalidLoginCredentialsException();
     }
@@ -115,5 +122,13 @@ public class UserServiceImplementation implements UserService {
     }
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     userRepository.save(user);
+  }
+
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    User user = userRepository.findUserByUsername(username).orElseThrow(UserNotFoundException::new);
+    Collection<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
+    simpleGrantedAuthorities.add(new SimpleGrantedAuthority("user"));
+    return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getPassword(),simpleGrantedAuthorities);
   }
 }
