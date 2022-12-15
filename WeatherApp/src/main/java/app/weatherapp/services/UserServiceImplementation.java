@@ -1,6 +1,5 @@
 package app.weatherapp.services;
 
-import app.weatherapp.dtos.UserLoginDto;
 import app.weatherapp.exceptions.InvalidLoginCredentialsException;
 import app.weatherapp.exceptions.PasswordIsTooShortException;
 import app.weatherapp.exceptions.PasswordMissingException;
@@ -43,27 +42,6 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
       BCryptPasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
-  }
-
-  public User login(UserLoginDto userLoginDto) {
-    if (userLoginDto.getUsername() == null || userLoginDto.getPassword() == null) {
-      throw new UserNotFoundException();
-    } else if (userLoginDto.getUsername().isEmpty() || userLoginDto.getPassword().isEmpty()) {
-      if (userLoginDto.getUsername().isEmpty()) {
-        throw new UsernameIsEmptyException();
-      }
-      throw new PasswordMissingException();
-    } else if (!userRepository.existsByUsername(userLoginDto.getUsername())) {
-      throw new UserNotFoundException();
-    }
-    boolean isPasswordMatches = passwordEncoder.matches(userLoginDto.getPassword(),
-        userRepository.findUserByUsername(
-            userLoginDto.getUsername()).orElseThrow().getPassword());
-    if (!isPasswordMatches) {
-      throw new InvalidLoginCredentialsException();
-    }
-    return userRepository.findUserByUsernameAndPassword(userLoginDto.getUsername(),
-        userLoginDto.getPassword());
   }
 
   public List<City> ListMyCities(Long id) {
@@ -129,6 +107,7 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
     User user = userRepository.findUserByUsername(username).orElseThrow(UserNotFoundException::new);
     Collection<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
     simpleGrantedAuthorities.add(new SimpleGrantedAuthority("user"));
-    return new org.springframework.security.core.userdetails.User(user.getUsername(),user.getPassword(),simpleGrantedAuthorities);
+    return new org.springframework.security.core.userdetails.User(user.getUsername(),
+        user.getPassword(), simpleGrantedAuthorities);
   }
 }
